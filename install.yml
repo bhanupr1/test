@@ -1,0 +1,37 @@
+---
+- hosts: servers
+  become: yes
+  tasks:
+   - name: Upgrade all packages to the latest version
+     apt: update_cache=yes upgrade=dist
+   - name: Add an Apt signing key, uses whichever key is at the URL
+     apt_key: url="https://download.docker.com/linux/ubuntu/gpg" state=present
+   - name: ensure docker registry is available for Ubuntu
+     apt_repository: repo="deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_lsb.codename }} stable" state=present update_cache=yes
+   - name: update ubuntu 
+     apt: upgrade=dist update_cache=yes 
+   - name: ensure docker and dependencies are installed
+     package: name=docker-ce update_cache=yes state=present
+   - name: Adding ubuntu to group docker to manage docker as non-root user
+     user: name=ubuntu groups=docker append=yes
+   - name: Setup Node.js
+     shell: "curl https://raw.githubusercontent.com/creationix/nvm/v0.33.2/install.sh | bash"
+ #  - name: install nodejs using nvm
+  #   command: bash -c '. ~/.nvm/nvm.sh; nvm install '
+#   - name: set default node version
+ #    command: bash -c '. ~/.nvm/nvm.sh; nvm alias default '
+   - name: Install nvm
+     shell: >
+          curl https://raw.githubusercontent.com/creationix/nvm/v0.7.0/install.sh | sh
+          creates=/home/{{ ansible_user_id }}/.nvm/nvm.sh
+   - name: Install node and set version
+     shell: >
+          /bin/bash -c "source ~/.nvm/nvm.sh && nvm install 0.10 && nvm alias default 0.10"
+          creates=/home/{{ ansible_user_id }}/.nvm/alias   
+
+   - name: install  git
+     apt: name=git state=present
+   - name: Install Docker compose
+     shell: >
+         curl -L https://github.com/docker/compose/releases/download/1.13.0/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose && sudo chmod +x /usr/local/bin/docker-compose
+     
