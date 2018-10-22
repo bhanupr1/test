@@ -1,0 +1,9 @@
+version: '3'
+services:
+  db:
+     image: klaemo/couchdb
+     container_name: test_instance
+     restart: always
+     environment:
+        - MYSQL_ROOT_PASSWORD="secret"
+
