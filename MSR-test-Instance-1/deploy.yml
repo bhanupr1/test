@@ -1,0 +1,20 @@
+---
+- hosts: all
+  become: yes 
+  tasks:
+    - name: git update	
+      git:
+        repo: 'git@github.com:bhanupr1/test.git'
+        dest: /etc/ansible/
+        clone: no
+        update: yes
+        version: master
+    - name: Copy httpd configuration file
+      copy: src=/data/httpd.original dest=/etc/httpd/conf/httpd.conf
+    - name: Copy index.html file
+      copy: src=/etc/ansible/webapp/index.html dest=/var/www/html
+  notify:
+      - restart apache
+    - name: Start and Enable httpd service
+      service: name=httpd state=restarted enabled=yes
+
